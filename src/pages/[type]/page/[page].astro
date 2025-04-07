@@ -2,7 +2,6 @@
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/main.astro";
 import PageHeading from "../../../components/page-heading.astro";
-import PostsLoop from "../../../components/posts-loop.astro";
 import ProjectLoop from "../../../components/project-loop.astro";
 import SearchBar from "../../../components/SearchBar.astro";
 import Pagination from "../../../components/Pagination.astro";
@@ -28,7 +27,7 @@ export async function getStaticPaths() {
 
 const { type, page } = Astro.params;
 const currentPage = parseInt(page || "1");
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 // 获取内容集合
 const items = await getCollection(type as "post" | "project");
@@ -49,7 +48,7 @@ const currentItems = items.slice(startIndex, endIndex);
 const pageTitle = type === "post" ? "My Writing" : "My Projects";
 const pageDescription = type === "post" 
   ? "Dive into my musings on life and tech in my latest posts; a blend of introspection and innovation. Keep an eye out for fresh insights and updates!"
-  : "Explore my latest projects and experiments. From web development to creative coding, discover what I've been building.";
+  : "Explore my recent projects and find out what I am doing!";
 ---
 
 <Layout title={pageTitle}>
@@ -60,13 +59,9 @@ const pageDescription = type === "post"
     />
     <SearchBar type={type} />
     <div class="z-50 flex flex-col items-stretch w-full gap-5 my-8">
-      {type === "post" ? (
-        <PostsLoop posts={currentItems} />
-      ) : (
-        <div class="grid items-stretch w-full grid-cols-1 gap-7 sm:gap-5 sm:grid-cols-2">
-          <ProjectLoop projects={currentItems} />
-        </div>
-      )}
+      <div class="grid items-stretch w-full grid-cols-1 gap-7 sm:gap-5 sm:grid-cols-2">
+        <ProjectLoop projects={currentItems} />
+      </div>
     </div>
     <Pagination
       currentPage={currentPage}
