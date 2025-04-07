@@ -1,0 +1,29 @@
+---
+const { logo, dates, role, company, description } = Astro.props;
+---
+
+<div class="relative flex flex-col justify-start pl-12 lg:hover:!opacity-100 lg:hover:bg-neutral-100 dark:lg:hover:bg-neutral-900 lg:group-hover/list:opacity-50 hover:backdrop-blur-sm duration-500 rounded-lg p-6">
+  <div
+    class="absolute top-0 left-0 z-40 flex items-center justify-center -translate-x-1/2 bg-white border rounded-full dark:bg-neutral-950 w-14 h-14 border-neutral-300 dark:border-neutral-700"
+  >
+    <img src={logo} alt={company} class="h-8" />
+  </div>
+  <div class="flex flex-row justify-between my-1 lg:my-2">
+    <h3 class="text-lg font-bold dark:text-neutral-100">{role}</h3>
+    <p
+      class="text-xs leading-7 uppercase text-neutral-400 dark:text-neutral-500 trackign-widest"
+    >
+      {dates}
+    </p>
+  </div>
+
+  <p class="mb-1 text-sm font-medium dark:text-neutral-300">{company}</p>
+  <p class="text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+    {description.split('\n').map((line: any, index: any) => (
+      <>
+        {line}
+        <br />
+      </>
+    ))}
+  </p>
+</div>

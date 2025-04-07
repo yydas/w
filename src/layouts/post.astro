@@ -1,0 +1,143 @@
+---
+import Layout from "./main.astro";
+import Navigation from "src/components/Navigation.astro";
+import TableOfContents from "src/components/TableOfContents.astro";
+import PostList from "src/components/PostList.astro";
+
+interface Props {
+  entry: any;
+  headings: any[];
+}
+
+const { entry, headings } = Astro.props;
+
+// 创建日期格式化器
+const formatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+// 计算阅读时间的函数
+function calculateReadingTime(content: string) {
+  const wordsPerMinute = 100;
+  const words = content.split(/\s+/).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return `${minutes} 分钟`;
+}
+---
+
+<Layout title={entry.data.title}>
+  <main
+    class="relative z-30 max-w-[90rem] pb-1 mx-auto mt-10 md:rounded-t-md text-neutral-900"
+  >
+    <div class="flex">
+      <!-- Left Sidebar - Post List -->
+      <aside class="hidden xl:block w-64 min-h-screen">
+        <div class="post-list-container">
+          <h3 class="text-lg font-semibold mb-4 dark:text-neutral-50">文章列表</h3>
+          <PostList />
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        <div
+          class="relative flex flex-col px-5 lg:px-0 justify-stretch"
+        >
+          
+          <h1
+            class="w-full max-w-2xl mx-auto text-3xl font-bold leading-tight tracking-tighter text-left md:mb-6 md:text-4xl dark:text-neutral-100 lg:text-5xl md:leading-none"
+          >
+            {entry.data.title}
+          </h1>
+          <div class="w-full max-w-2xl mx-auto mb-4 text-sm text-neutral-500 text-left">
+            <span>{formatter.format(new Date(entry.data.dateFormatted))}</span>
+            <span class="mx-2">•</span>
+            <span>{calculateReadingTime(entry.data.description)} 阅读</span>
+          </div>
+          {entry.data.tags && entry.data.tags.length > 0 && (
+            <div class="w-full max-w-2xl mx-auto mb-12 flex flex-wrap gap-2">
+              {entry.data.tags.map((tag: string) => (
+                <a
+                  href={`/tags/${tag}`}
+                  class="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div class="flex gap-8 px-4 lg:px-8">
+          <article
+            class="w-full font-sans max-w-2xl mx-auto mb-20 prose-sm prose lg:prose-lg dark:prose-invert prose-pre:bg-white"
+          >
+            <slot />
+          </article>
+        </div>
+        
+        <Navigation />
+      </div>
+
+      <!-- Right Sidebar - Table of Contents -->
+      <aside class="hidden xl:block w-64 min-h-screen">
+        <div class="post-list-container">
+          <h3 class="text-lg font-semibold mb-4 dark:text-neutral-200">页面导航</h3>
+          <TableOfContents headings={headings} />
+        </div>
+      </aside>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  :global(.prose h1[id], .prose h2[id], .prose h3[id], .prose h4[id], .prose h5[id], .prose h6[id]) {
+    scroll-margin-top: 4rem;
+    font-weight: bold;
+  }
+
+  .post-list-container {
+    position: sticky;
+    margin-top: 108px;
+    padding: 1rem;
+    transition: margin-top 0.3s ease;
+  }
+
+  .post-list-container.scrolled {
+    top: 80px;
+  }
+</style>
+
+<script>
+  // 创建一个观察器来检测页面顶部
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      const postListContainers = document.querySelectorAll('.post-list-container');
+      postListContainers.forEach(container => {
+        if (!entry.isIntersecting) {
+          container.classList.add('scrolled');
+        } else {
+          container.classList.remove('scrolled');
+        }
+      });
+    },
+    {
+      threshold: 0,
+      rootMargin: "-1px 0px 0px 0px"
+    }
+  );
+
+  // 创建一个顶部标记元素来观察
+  const topMarker = document.createElement('div');
+  topMarker.style.height = '1px';
+  topMarker.style.width = '100%';
+  topMarker.style.position = 'absolute';
+  topMarker.style.top = '0';
+  topMarker.style.left = '0';
+  
+  // 将标记元素添加到文档中并开始观察
+  document.body.prepend(topMarker);
+  observer.observe(topMarker);
+</script>

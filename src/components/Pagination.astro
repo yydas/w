@@ -1,0 +1,122 @@
+---
+import { getCollection } from "astro:content";
+import { basename } from "node:path";
+
+const currentPath = Astro.url.pathname;
+const isProjectPage = currentPath.startsWith('/project/');
+
+// 根据页面类型获取相应的集合
+const items = (await getCollection(isProjectPage ? "project" : "post")).sort(
+  (a, b) => new Date(a.data.dateFormatted).getTime() - new Date(b.data.dateFormatted).getTime()
+);
+
+const currentIndex = items.findIndex((item) => {
+  return basename(Astro.url.pathname) === item.slug;
+});
+
+const nextItem = items[currentIndex + 1];
+const prevItem = items[currentIndex - 1];
+
+// 获取导航文本
+const nextText = isProjectPage ? "Next Project" : "Next Post";
+const prevText = isProjectPage ? "Previous Project" : "Previous Post";
+
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
+}
+
+const { currentPage, totalPages, baseUrl } = Astro.props;
+
+// 生成页码数组
+const getPageNumbers = () => {
+  const pages = [];
+  const maxVisiblePages = 5;
+  
+  if (totalPages <= maxVisiblePages) {
+    // 如果总页数小于等于最大可见页数，显示所有页码
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // 始终显示第一页
+    pages.push(1);
+    
+    // 计算中间页码的起始和结束
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    
+    // 调整起始和结束位置
+    if (currentPage <= 3) {
+      end = 4;
+    } else if (currentPage >= totalPages - 2) {
+      start = totalPages - 3;
+    }
+    
+    // 添加省略号
+    if (start > 2) {
+      pages.push('...');
+    }
+    
+    // 添加中间页码
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // 添加省略号
+    if (end < totalPages - 1) {
+      pages.push('...');
+    }
+    
+    // 始终显示最后一页
+    pages.push(totalPages);
+  }
+  
+  return pages;
+};
+
+const pageNumbers = getPageNumbers();
+---
+
+<nav class="flex items-center justify-center space-x-2 mt-8">
+  {/* 上一页按钮 */}
+  {currentPage > 1 && (
+    <a
+      href={`${baseUrl}/${currentPage - 1}`}
+      class="px-3 py-2 text-sm font-medium text-neutral-600 transition-colors duration-200 rounded-lg hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+    >
+      上一页
+    </a>
+  )}
+  
+  {/* 页码按钮 */}
+  {pageNumbers.map((page) => (
+    page === '...' ? (
+      <span class="px-3 py-2 text-sm font-medium text-neutral-400">...</span>
+    ) : (
+      <a
+        href={`${baseUrl}/${page}`}
+        class:list={[
+          "px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
+          {
+            "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100": page === currentPage,
+            "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800": page !== currentPage
+          }
+        ]}
+      >
+        {page}
+      </a>
+    )
+  ))}
+  
+  {/* 下一页按钮 */}
+  {currentPage < totalPages && (
+    <a
+      href={`${baseUrl}/${currentPage + 1}`}
+      class="px-3 py-2 text-sm font-medium text-neutral-600 transition-colors duration-200 rounded-lg hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+    >
+      下一页
+    </a>
+  )}
+</nav>

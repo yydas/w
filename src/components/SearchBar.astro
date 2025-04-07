@@ -1,0 +1,8 @@
+---
+import Search from './Search';
+import { getCollection } from "astro:content";
+
+const { type = "post" } = Astro.props;
+const items = (await getCollection(type));
+---
+<Search client:load searchList={items} type={type}></Search>
