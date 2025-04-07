@@ -5,7 +5,7 @@ import react from "@astrojs/react";
 // https://astro.build/config
 export default defineConfig({
   integrations: [tailwind(), react()],
-  site: 'https://yydas.github.io',
+  site: 'https://w-6e5.pages.dev',
   server: {
     host: '0.0.0.0',
   },
